@@ -1,27 +1,31 @@
 from utils import (read_video,
                    save_video)
 from trackers import PlayerTracker,BallTracker
+from pathlib import Path
 from court_keypoint_placement import CourtKeypointsManager
 from mini_court import MiniCourt
 from datetime import datetime
 import cv2
 
+# set to true if you want to replace the stubs
+read_new_player_stub = False 
+read_new_ball_stub = False
+
 def main():
     # read video
     input_video_path = "input_videos/input_video.mp4"
-    video_frames = read_video(input_video_path)
+    video_frames, fps = read_video(input_video_path)
 
     # detect players and ball
     player_tracker = PlayerTracker(model_path='yolov8x')
     ball_tracker = BallTracker(model_path='models/ball_tracker_2.pt')
 
-    # if you have a stub made, switch read_from_stub to True, else False
     player_detections = player_tracker.detect_frames(video_frames,
-                                                     read_from_stub=False,
+                                                     read_from_stub=read_new_player_stub,
                                                      stub_path="tracker_stubs/player_detections.pkl"
                                                      )
     ball_detections = ball_tracker.detect_frames(video_frames,
-                                                     read_from_stub=False,
+                                                     read_from_stub=read_new_ball_stub,
                                                      stub_path="tracker_stubs/ball_detections.pkl"
                                                      )
     print("Interpolating ball positions...")
@@ -82,7 +86,7 @@ def main():
         cv2.putText(frame, f"Frame: {i}", (10,30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
 
     print("Saving video...")
-    save_video(output_video_frames, filename)
+    save_video(output_video_frames, filename, fps)
 
 if __name__ == "__main__":
     main()
